@@ -26,7 +26,6 @@ def matches_query1(name, query):
 def extract_price(price_str):
     # remove all non-numeric characters from the string
     numeric_str = ''.join(filter(str.isdigit, price_str))
-
     # convert the resulting string to a float and return it
     return float(numeric_str) / 100
 def convert_to_float(value_str):
@@ -36,21 +35,14 @@ def convert_to_float(value_str):
     value_str = "".join(filter(str.isdigit, value_str))
     # Convert the string to a float and divide by 100
     return float(value_str) / 100
-def convert_price_string(price_str):
-    price_float = float(price_str.split()[-1].replace(',', ''))
-    return price_float
-
 def extract_price1(price):
     if price is None:
         return None
-
     price_str = price.replace("Dhs", "").strip()
     pattern = r'\d[\d\,\.]*'
     match = re.search(pattern, price_str)
-
     if match is None:
         return None
-
     numeric_str = match.group().replace(',', '')
     return float(numeric_str)
 
@@ -111,8 +103,6 @@ def scrape_products(query):
 if __name__ == '__main__':
     print("-------------- Please paste the exact name of the item ------------")
     query = input("item name: ").lower().split()
-    print(query)
     products= scrape_products(query)
-    print("------------------------------")
     for name, price, img_url in zip(products['name'], products['price'], products['img url']):
         print(name, price, img_url)
