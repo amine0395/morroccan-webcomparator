@@ -49,20 +49,23 @@ def extract_price1(price):
 # Main function to scrape Jumia and CosmosElectro for products
 def scrape_jumia(jumia_url,base_jumia_url,query):
     columns = {'name': [], 'price': [], 'img url': []}
-    for page in range(1, 2):
-        print('---', page, '---')
-        jumia_r = requests.get(jumia_url + str(page))
-        jumia_soup = BeautifulSoup(jumia_r.content, "html.parser")
-        jumia_anchors = jumia_soup.find('div', {'class': '-paxs row _no-g _4cl-3cm-shs'}).find_all('article',{'class': 'prd _fb col c-prd'})
-        for anchor in jumia_anchors:
+
+    jumia_r = requests.get(jumia_url )
+    jumia_soup = BeautifulSoup(jumia_r.content, "html.parser")
+    jumia_anchors = jumia_soup.find('div', {'class': '-paxs row _no-g _4cl-3cm-shs'}).find_all('article',{'class': 'prd _fb col c-prd'})
+    a= float(extract_price(jumia_anchors[0].find('a').find('div', {'class': 'info'}).find('div', {'class': 'prc'}).text))
+    for anchor in jumia_anchors:
             img = anchor.find('a',href=True)["href"]
             name = anchor.find('a').find('div', {'class': 'info'}).find('h3', {'class': 'name'})
-            price = anchor.find('a').find('div', {'class': 'info'}).find('div', {'class': 'prc'})
+            price = float(extract_price(anchor.find('a').find('div', {'class': 'info'}).find('div', {'class': 'prc'}).text))
             if matches_query(name, query):
-                columns['name'].append(name.text)
-                columns['price'].append(extract_price(price.text))
-                columns['img url'].append(base_jumia_url+str(img))
-        return columns
+                if a<price:
+                    a=price
+                    columns = {'name': [], 'price': [], 'img url': []}
+                    columns['name'].append(name.text)
+                    columns['price'].append(price)
+                    columns['img url'].append(base_jumia_url+str(img))
+    return columns
 def scrape_cosmos(cosmos_url,query,columns):
     cosmos_r = requests.get(cosmos_url)
     cosmos_soup = BeautifulSoup(cosmos_r.content, "html.parser")
@@ -101,7 +104,6 @@ def scrape_products(query):
     columns=scrape_bousfiha(bousfiha_url,query,columns)
     return columns
 if __name__ == '__main__':
-    print("-------------- Please paste the exact name of the item ------------")
     query = input("item name: ").lower().split()
     products= scrape_products(query)
     for name, price, img_url in zip(products['name'], products['price'], products['img url']):
