@@ -59,7 +59,7 @@ def scrape_jumia(jumia_url,base_jumia_url,query):
             name = anchor.find('a').find('div', {'class': 'info'}).find('h3', {'class': 'name'})
             price = float(extract_price(anchor.find('a').find('div', {'class': 'info'}).find('div', {'class': 'prc'}).text))
             if matches_query(name, query):
-                if a<price:
+                if a>price:
                     a=price
                     columns = {'name': [], 'price': [], 'img url': []}
                     columns['name'].append(name.text)
