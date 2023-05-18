@@ -74,9 +74,8 @@ def scrape_cosmos(cosmos_url,query):
     cosmos_soup = BeautifulSoup(cosmos_r.content, "html.parser")
     cosmos_anchors = cosmos_soup.find_all(class_='col-xl-2 col-lg-4 col-md-4 col-sm-6 col-6')
     if cosmos_anchors:
-        a=float(extract_price1(cosmos_anchors[0].find(class_='ps-product__price').string))
+        a = 999999999
     for anchor in cosmos_anchors:
-
         img = anchor.find('a', href=True)["href"]
         price = float(extract_price1(anchor.find(class_='ps-product__price').text))
         name = anchor.find(class_='ps-product__title').string
@@ -114,6 +113,7 @@ def scrape_products(query):
     jumia_url = base_jumia_url+'/catalog/?q=' + '+'.join(query) + '#catalog-listing&page='
     cosmos_url = 'https://www.cosmoselectro.ma/products?categories%5B%5D=0&q=' + '+'.join(query)
     bousfiha_url="https://electrobousfiha.com/recherche?cat_id=all&controller=search&s="+str(query)+"&spr_submit_search=Search&n=21&order=product.price.asc"
+    marjmall_url="https://www.marjanemall.ma/catalogsearch/result/index/?p=2&q="+'+'.join(query)+"&product_list_order=most_viewed"
     columns=scrape_jumia(jumia_url,base_jumia_url,query)
     columns1=scrape_cosmos(cosmos_url,query)
     if bool(columns1['name']):
