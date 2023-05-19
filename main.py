@@ -1,14 +1,14 @@
 import re
 import requests
 from bs4 import BeautifulSoup
-
+import hard_scrap
 # Function to check if a product name matches the search query
 def matches_query(name, query):
     name_words = name.text.strip().lower().split()
     z = name_words if len(name_words) < len(query) else query
     i=0
     for x in z:
-        if x!=name_words[i] and x!=query[i]:
+        if name_words[i]!=x or query[i]!=x:
             return False
         i+=1
     return True
@@ -44,8 +44,7 @@ def extract_price1(price):
 def assemble(query):
     b=""
     for a in query:
-        b+=" "
-        b+=a
+        b=b+a+" "
     return b
 # Main function to scrape Jumia and CosmosElectro for products
 def scrape_jumia(jumia_url,base_jumia_url,query):
@@ -92,13 +91,14 @@ def scrape_bousfiha(bousfiha_url,query):
     bousfiha_r = requests.get(bousfiha_url)
     bousfiha_soup = BeautifulSoup(bousfiha_r.content, 'html.parser')
     bousfiha_anchors = bousfiha_soup.find_all(class_="product-container")
+    print(bousfiha_url)
     if bousfiha_anchors:
         a=9999999
     for anchor in bousfiha_anchors:
         img = anchor.find('a', href=True)["href"]
         price = float(convert_to_float(anchor.find(class_='price').string))
         name = anchor.find(class_='product-title').find('a', href=True).text
-        if str(assemble(query)) in name.lower():
+        if str(assemble(query).lower()) in name.lower():
             if a>=price:
                 a=price
                 columns = {'name': [], 'price': [], 'img url': []}
@@ -112,8 +112,8 @@ def scrape_products(query):
     base_jumia_url='https://www.jumia.ma'
     jumia_url = base_jumia_url+'/catalog/?q=' + '+'.join(query) + '#catalog-listing&page='
     cosmos_url = 'https://www.cosmoselectro.ma/products?categories%5B%5D=0&q=' + '+'.join(query)
-    bousfiha_url="https://electrobousfiha.com/recherche?cat_id=all&controller=search&s="+str(query)+"&spr_submit_search=Search&n=21&order=product.price.asc"
-    marjmall_url="https://www.marjanemall.ma/catalogsearch/result/index/?p=2&q="+'+'.join(query)+"&product_list_order=most_viewed"
+    bousfiha_url="https://electrobousfiha.com/recherche?cat_id=all&controller=search&s="+"+".join(query)+"&spr_submit_search=Search&n=21&order=product.position.desc"
+    marjmall_url="https://www.marjanemall.ma/catalogsearch/result/?q="+'+'.join(query)+"&product_list_order=most_viewed"
     columns=scrape_jumia(jumia_url,base_jumia_url,query)
     columns1=scrape_cosmos(cosmos_url,query)
     if bool(columns1['name']):
@@ -121,6 +121,11 @@ def scrape_products(query):
         columns['price'].append(columns1['price'][0])
         columns['img url'].append(columns1['img url'][0])
     columns1 = scrape_bousfiha(bousfiha_url, query)
+    if bool(columns1['name']):
+        columns['name'].append(columns1['name'][0])
+        columns['price'].append(columns1['price'][0])
+        columns['img url'].append(columns1['img url'][0])
+    columns1 = hard_scrap.scrape_marjane(marjmall_url,query)
     if bool(columns1['name']):
         columns['name'].append(columns1['name'][0])
         columns['price'].append(columns1['price'][0])
