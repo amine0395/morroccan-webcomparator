@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 import playground
 
+
 path="C:\Program Files (x86)\chromedriver.exe"
 driver = webdriver.Chrome(path)
 def scrape_marjane(marjmall_url,query):
