@@ -13,11 +13,14 @@ def matches_query(name, query):
         i+=1
     return True
 def matches_query1(name, query):
-    name_words = name.strip().lower().split()
-    for i in range(1, len(query) + 1):
-        if name_words[:i] == query[:i]:
-            return True
-    return False
+    name_words = name.lower().split()
+    z = name_words if len(name_words) < len(query) else query
+    i=0
+    for x in z:
+        if name_words[i]!=x or query[i]!=x:
+            return False
+        i+=1
+    return True
 
 def extract_price(price_str):
     # remove all non-numeric characters from the string
@@ -57,9 +60,10 @@ def scrape_jumia(jumia_url,base_jumia_url,query):
 
     for anchor in jumia_anchors:
             img = anchor.find('a',href=True)["href"]
+            category = img = anchor.find('a',href=True)["data-category"]
             name = anchor.find('a').find('div', {'class': 'info'}).find('h3', {'class': 'name'})
             price = float(extract_price(anchor.find('a').find('div', {'class': 'info'}).find('div', {'class': 'prc'}).text))
-            if matches_query(name, query):
+            if matches_query(name, query) and "Phones & Tablets/Mobile Phones" in str(category):
                 if a>price:
                     a=price
                     columns = {'name': [], 'price': [], 'img url': []}
@@ -113,7 +117,8 @@ def scrape_products(query):
     cosmos_url = 'https://www.cosmoselectro.ma/products?categories%5B%5D=0&q=' + '+'.join(query)
     bousfiha_url="https://electrobousfiha.com/recherche?cat_id=all&controller=search&s="+"+".join(query)+"&spr_submit_search=Search&n=21&order=product.position.desc"
     marjmall_url="https://www.marjanemall.ma/catalogsearch/result/?q="+'+'.join(query)+"&product_list_order=most_viewed"
-    ecplanet_url="https://www.electroplanet.ma/recherche?q="+'+'.join(query)
+    ecplanet_url="https://www.electroplanet.ma/recherche?product_list_dir=asc&product_list_order=price&q="+'+'.join(query)
+    
     columns=scrape_jumia(jumia_url,base_jumia_url,query)
     columns1=scrape_cosmos(cosmos_url,query)
     if bool(columns1['name']):
