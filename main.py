@@ -50,27 +50,45 @@ def assemble(query):
         b=b+a+" "
     return b
 # Main function to scrape Jumia and CosmosElectro for products
-def scrape_jumia(jumia_url,base_jumia_url,query):
-    columns = {'name': [], 'price': [], 'img url': []}
-    jumia_r = requests.get(jumia_url )
+def scrape_jumia(jumia_url, base_jumia_url, query, choice):
+  if choice=='1':
+        category = "Phones & Tablets/Mobile Phones"
+  elif choice == '2':
+        category = "Accessories"
+  elif choice == '3':
+        category = "Phones & Tablets/Accessories/Smart Watches"
+  elif choice == '4':
+        category = "Electronics/Television & Video"
+  elif choice == '5':
+        category = "Computing/Computers & Accessories/Computers & Tablets/"
+
+  columns = {'name': [], 'price': [], 'img url': []}
+  try:
+    jumia_r = requests.get(jumia_url)
     jumia_soup = BeautifulSoup(jumia_r.content, "html.parser")
-    jumia_anchors = jumia_soup.find('div', {'class': '-paxs row _no-g _4cl-3cm-shs'}).find_all('article',{'class': 'prd _fb col c-prd'})
+    jumia_anchors = jumia_soup.find('div', {'class': '-paxs row _no-g _4cl-3cm-shs'}).find_all('article', {
+          'class': 'prd _fb col c-prd'})
     if jumia_anchors:
-        a= 9999999
+        a = 9999999
 
     for anchor in jumia_anchors:
-            img = anchor.find('a',href=True)["href"]
-            category = img = anchor.find('a',href=True)["data-category"]
-            name = anchor.find('a').find('div', {'class': 'info'}).find('h3', {'class': 'name'})
-            price = float(extract_price(anchor.find('a').find('div', {'class': 'info'}).find('div', {'class': 'prc'}).text))
-            if matches_query(name, query) and "Phones & Tablets/Mobile Phones" in str(category):
-                if a>price:
-                    a=price
-                    columns = {'name': [], 'price': [], 'img url': []}
-                    columns['name'].append(name.text)
-                    columns['price'].append(price)
-                    columns['img url'].append(base_jumia_url+str(img))
+        img = anchor.find('a', href=True)["href"]
+        cat = anchor.find('a', href=True)["data-category"]
+        name = anchor.find('a').find('div', {'class': 'info'}).find('h3', {'class': 'name'})
+        price = float(extract_price(anchor.find('a').find('div', {'class': 'info'}).find('div', {'class': 'prc'}).text))
+        if matches_query(name, query) and str(category) in str(cat):
+            if a > price:
+                a = price
+                columns = {'name': [], 'price': [], 'img url': []}
+                columns['name'].append(name.text)
+                columns['price'].append(price)
+                columns['img url'].append(base_jumia_url + str(img))
+
     return columns
+  except:
+      return columns
+
+
 def scrape_cosmos(cosmos_url,query):
     columns = {'name': [], 'price': [], 'img url': []}
     cosmos_r = requests.get(cosmos_url)
@@ -109,7 +127,7 @@ def scrape_bousfiha(bousfiha_url,query):
                 columns['price'].append(price)
                 columns['img url'].append(img)
     return columns
-def scrape_products(query):
+def scrape_products(query,choice):
     columns = {'name': [], 'price': [], 'img url': []}
     columns1 = {'name': [], 'price': [], 'img url': []}
     base_jumia_url='https://www.jumia.ma'
@@ -117,9 +135,9 @@ def scrape_products(query):
     cosmos_url = 'https://www.cosmoselectro.ma/products?categories%5B%5D=0&q=' + '+'.join(query)
     bousfiha_url="https://electrobousfiha.com/recherche?cat_id=all&controller=search&s="+"+".join(query)+"&spr_submit_search=Search&n=21&order=product.position.desc"
     marjmall_url="https://www.marjanemall.ma/catalogsearch/result/?q="+'+'.join(query)+"&product_list_order=most_viewed"
-    ecplanet_url="https://www.electroplanet.ma/recherche?product_list_dir=asc&product_list_order=price&q="+'+'.join(query)
+    ecplanet_url="https://www.electroplanet.ma/recherche?q="+'+'.join(query)
     
-    columns=scrape_jumia(jumia_url,base_jumia_url,query)
+    columns=scrape_jumia(jumia_url,base_jumia_url,query,choice)
     columns1=scrape_cosmos(cosmos_url,query)
     if bool(columns1['name']):
         columns['name'].append(columns1['name'][0])
@@ -143,6 +161,7 @@ def scrape_products(query):
     return columns
 if __name__ == '__main__':
     query = input("item name: ").lower().split()
-    products= scrape_products(query)
+    choice = input("1- Telephone \n2-Accessoires \n3-Smart watch \n4-Televisions et video\n5-Ordinateurs \nchoice:")
+    products= scrape_products(query,choice)
     for name, price, img_url in zip(products['name'], products['price'], products['img url']):
         print(name, price, img_url)
