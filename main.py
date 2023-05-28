@@ -127,6 +127,22 @@ def scrape_bousfiha(bousfiha_url,query):
                 columns['price'].append(price)
                 columns['img url'].append(img)
     return columns
+def scrape_avito(avito_url,query):
+    columns = {'name': [], 'price': [], 'img url': []}
+    avito_r= requests.get(avito_url)
+    avito_soup = BeautifulSoup(avito_r.content, 'html.parser')
+    try:
+        avito_anchors = avito_soup.find_all(class_="sc-jejop8-0 epNjzr")
+        if avito_anchors:
+            a=2000000000
+        for anchor in avito_anchors:
+            img=anchor.find('a',href=True)["href"]
+            price= float(convert_to_float(anchor.find(class_='sc-1x0vz2r-0 bpfcIG sc-jejop8-18 dfevBq').string))
+            print(img,"  \prix:  ",price)
+    except:
+        return
+
+
 def scrape_products(query,choice):
     columns = {'name': [], 'price': [], 'img url': []}
     columns1 = {'name': [], 'price': [], 'img url': []}
@@ -136,29 +152,51 @@ def scrape_products(query,choice):
     bousfiha_url="https://electrobousfiha.com/recherche?cat_id=all&controller=search&s="+"+".join(query)+"&spr_submit_search=Search&n=21&order=product.position.desc"
     marjmall_url="https://www.marjanemall.ma/catalogsearch/result/?q="+'+'.join(query)+"&product_list_order=most_viewed"
     ecplanet_url="https://www.electroplanet.ma/recherche?q="+'+'.join(query)
-    
+    avito_url="https://www.avito.ma/fr/maroc/"+'+'.join(query)+"--à_vendre"
+
+
     columns=scrape_jumia(jumia_url,base_jumia_url,query,choice)
     columns1=scrape_cosmos(cosmos_url,query)
-    if bool(columns1['name']):
-        columns['name'].append(columns1['name'][0])
-        columns['price'].append(columns1['price'][0])
-        columns['img url'].append(columns1['img url'][0])
+    try:
+        if bool(columns1['name']):
+            columns['name'].append(columns1['name'][0])
+            columns['price'].append(columns1['price'][0])
+            columns['img url'].append(columns1['img url'][0])
+    except:
+        pass
     columns1 = scrape_bousfiha(bousfiha_url, query)
-    if bool(columns1['name']):
-        columns['name'].append(columns1['name'][0])
-        columns['price'].append(columns1['price'][0])
-        columns['img url'].append(columns1['img url'][0])
-    columns1 = hard_scrap.scrape_marjane(marjmall_url,query)
-    if bool(columns1['name']):
-        columns['name'].append(columns1['name'][0])
-        columns['price'].append(columns1['price'][0])
-        columns['img url'].append(columns1['img url'][0])
-    columns1=hard_scrap.scrape_electroplanet(ecplanet_url,query)
-    if bool(columns1['name']):
-        columns['name'].append(columns1['name'][0])
-        columns['price'].append(columns1['price'][0])
-        columns['img url'].append(columns1['img url'][0])
-    return columns
+    try:
+        if bool(columns1['name']):
+            columns['name'].append(columns1['name'][0])
+            columns['price'].append(columns1['price'][0])
+            columns['img url'].append(columns1['img url'][0])
+    except:
+        pass
+    columns1 = hard_scrap.scrape_marjane(marjmall_url, query)
+    try:
+        if bool(columns1['name']):
+            columns['name'].append(columns1['name'][0])
+            columns['price'].append(columns1['price'][0])
+            columns['img url'].append(columns1['img url'][0])
+    except:
+        pass
+    columns1 = hard_scrap.scrape_avito(avito_url, query)
+    try:
+        if bool(columns1['name']):
+            columns['name'].append(columns1['name'][0])
+            columns['price'].append(columns1['price'][0])
+            columns['img url'].append(columns1['img url'][0])
+    except:
+        pass
+    columns1 = hard_scrap.scrape_electroplanet(ecplanet_url, query)
+    try:
+        if bool(columns1['name']):
+            columns['name'].append(columns1['name'][0])
+            columns['price'].append(columns1['price'][0])
+            columns['img url'].append(columns1['img url'][0])
+        return columns
+    except:
+        return columns
 if __name__ == '__main__':
     query = input("item name: ").lower().split()
     choice = input("1- Telephone \n2-Accessoires \n3-Smart watch \n4-Televisions et video\n5-Ordinateurs \nchoice:")
