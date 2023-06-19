@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-
+from selenium.webdriver.chrome.options import Options
 
 import playground
 import unicodedata
@@ -14,7 +14,9 @@ import unicodedata
 
 
 path="C:\Program Files (x86)\chromedriver.exe"
-driver = webdriver.Chrome(path)
+chrome_options = Options()
+chrome_options.add_argument("--blink-settings=imagesEnabled=false")
+driver = webdriver.Chrome(path,options=chrome_options)
 def scrape_marjane(marjmall_url,query):
   columns = {'name': [], 'price': [], 'img url': []}
   driver.get(marjmall_url)
@@ -48,10 +50,8 @@ def  scrape_avito(avito_url ,query):
             element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div/main/div/div[6]/div[1]/div/div[2]")))
             search = element.find_elements(By.CLASS_NAME, "sc-jejop8-0")
             a=99999999
-            print(len(search))
             for item in search:
                     name = item.find_element(By.CLASS_NAME, "sc-jejop8-20.gsYzZU")
-                    print(name.text)
                     link=item.find_element(By.CLASS_NAME, "sc-jejop8-1.cYNgZe").get_attribute("href")
                     try:
                         price_element = item.find_element(By.CSS_SELECTOR, ".sc-1x0vz2r-0.bpfcIG.sc-jejop8-18.dfevBq > div > span")
@@ -59,10 +59,8 @@ def  scrape_avito(avito_url ,query):
                     except:
                         price="99999999999999"
                     if playground.matches_query(name, query):
-                            print("b")
                             numeric_price = float(unicodedata.normalize("NFKD", price).replace(" ", ""))
                             if numeric_price < a:
-                                print("c")
                                 a = numeric_price
                                 columns = {'name': [], 'price': [], 'img url': []}
                                 columns['name'].append(name.text)
